@@ -7,147 +7,197 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@600&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; font-family: 'Rajdhani', sans-serif; background: radial-gradient(circle at top, #330000, #000033, #000); color: white; min-height: 100vh; -webkit-user-select: none; }
-        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(0, 0, 0, 0.5); border-bottom: 1px solid rgba(255, 215, 0, 0.3); }
-        .title { font-family: 'Orbitron', sans-serif; font-size: 22px; color: #ffd700; margin: 0; }
-        .header-icons { display: flex; align-items: center; gap: 15px; }
-        .receipt-icon { cursor: pointer; color: #ffd700; font-size: 11px; font-weight: bold; }
-        .menu-icon { cursor: pointer; }
-        .menu-icon div { width: 25px; height: 3px; background-color: #ffd700; margin: 5px 0; }
-        .container { padding: 15px; }
-        .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .square-box { aspect-ratio: 1 / 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; text-align: center; }
-        .box-text { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: bold; margin-top: 8px; }
-        #payment-view, #price-view, #sub-menu { display: none; }
-        .back-btn { background: rgba(255,255,255,0.1); padding: 15px; text-align: center; border-radius: 10px; margin-bottom: 15px; cursor: pointer; border: 1px solid rgba(255,215,0,0.3); }
-        .price-row { display: flex; justify-content: space-between; padding: 15px; background: rgba(255, 255, 255, 0.05); margin-bottom: 8px; border-radius: 8px; border-left: 3px solid #ffd700; font-size: 18px; }
-        .pay-row { background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border-left: 3px solid #ffd700; }
-        .upload-label { display: block; background: #ffd700; color: #000; padding: 15px; border-radius: 10px; font-weight: bold; text-align: center; cursor: pointer; }
-        #side-menu { position: fixed; top: 0; right: -100%; width: 70%; height: 100%; background: #000; z-index: 100; transition: 0.3s; padding: 30px; }
+        body { margin: 0; padding: 0; font-family: 'Rajdhani', sans-serif; background: radial-gradient(circle at top, #330000, #000033, #000); color: white; min-height: 100vh; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(0, 0, 0, 0.5); border-bottom: 1px solid rgba(255, 215, 0, 0.3); }
+        .logo-title { display: flex; align-items: center; gap: 10px; }
+        .logo-img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
+        .title { font-family: 'Orbitron', sans-serif; font-size: 20px; color: #ffd700; margin: 0; }
+        .menu-btn { cursor: pointer; color: #ffd700; font-size: 11px; font-weight: bold; border: 1px solid #ff0d00a8; padding: 5px 10px; border-radius: 5px; }
+        .balance-box { background: #333; padding: 15px; text-align: center; font-size: 18px; border-radius: 10px; margin: 10px; border: 1px solid #ffd700; }
+        .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
+        .square-box { aspect-ratio: 1 / 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-align: center; }
+        .box-img { width: 60%; height: 60%; object-fit: contain; }
+        .back-btn { background: rgba(255,255,255,0.1); padding: 15px; text-align: center; border-radius: 10px; margin-bottom: 15px; cursor: pointer; border: 1px solid rgba(255,215,0,0.3); grid-column: span 3; }
+        .price-row { display: flex; justify-content: space-between; padding: 15px; background: rgba(255, 255, 255, 0.05); margin-bottom: 8px; border-radius: 8px; border-left: 3px solid #ffd700; align-items: center; }
+        .pay-row { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border-left: 3px solid #ffd700; text-align: center; font-size: 18px; }
+        #side-menu { position: fixed; top: 0; right: -100%; width: 70%; height: 100%; background: #000; z-index: 100; transition: 0.3s; padding: 30px; border-left: 2px solid #ffd700; }
         #side-menu.active { right: 0; }
     </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        const db = getDatabase(initializeApp({
+            apiKey: "AIzaSyC0VW5uEbxycL_4R6FQjfIWcXRxKSK9wqY",
+            databaseURL: "https://mygamestore-71454-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mygamestore-71454"
+        }));
+        onValue(ref(db, 'users/12345/balance'), (snapshot) => { 
+            const el = document.getElementById('my-money');
+            if(el) el.innerText = (snapshot.val() || 0) + " Ks"; 
+        });
+    </script>
 </head>
 <body>
 
 <header>
-    <h1 class="title">KZ GAME SHOP</h1>
-    <div class="header-icons">
-        <div class="receipt-icon" onclick="showPayment()">ပြေစာတင်ရန် 🧾</div>
-        <div class="menu-icon" onclick="toggleMenu()"><div></div><div></div><div></div></div>
+    <div class="logo-title">
+        <img src="https://i.ibb.co/TQVk3kC/IMG-20260301-165005-890.jpg" class="logo-img">
+        <h1 class="title">KZ GAME SHOP</h1>
+    </div>
+    <div style="display: flex; gap: 5px;">
+        <div class="menu-btn" onclick="showPayment()">ပြေစာတင်ရန်</div>
+        <div class="menu-btn" onclick="toggleMenu()">INFO</div>
     </div>
 </header>
 
-<div class="container">
-    <div id="home-page" class="menu-grid">
-        <div class="square-box" onclick="showSubMenu()">
-            <span style="font-size: 24px;">🎮</span>
-            <span class="box-text">GAMES</span>
+<div class="balance-box">
+    ငွေလက်ကျန်: <span id="my-money">Loading...</span>
+</div>
+
+<div id="home-page" class="menu-grid">
+    <div class="square-box" onclick="showSubMenu()"><img src="https://i.ibb.co/4w03yjGQ/unnamed-2.png" class="box-img"><span>GAMES</span></div>
+    <div class="square-box" onclick="showSection('tiktok')"><img src="https://i.ibb.co/VWrVBbv4/5c40ede2420a9ece3391af43942a5409.png" class="box-img"><span>TIKTOK</span></div>
+    <div class="square-box" onclick="showSection('telegram')"><img src="https://i.ibb.co/Y4LkTBn6/telegram-6896827-1280.png" class="box-img"><span>TELEGRAM</span></div>
+</div>
+
+<div id="sub-menu" class="menu-grid" style="display:none;">
+    <div class="back-btn" onclick="goHome()">⬅️ BACK TO HOME</div>
+    <div class="square-box" onclick="showSection('mlbb')"><img src="https://i.ibb.co/mCFRymwj/da8ee735a4e1a99c906cec8063ef81f7.jpg" class="box-img"><span>MLBB</span></div>
+    <div class="square-box" onclick="showSection('pubg')"><img src="https://i.ibb.co/7NX3pT1V/Player-Unknown-s-Battlegrounds-Mobile.webp" class="box-img"><span>PUBG</span></div>
+</div>
+
+<div id="price-view" style="display:none; padding:15px;">
+    <div class="back-btn" onclick="goHome()">⬅️ BACK</div>
+    <h3 id="section-title" style="text-align: center; color: #ffd700;"></h3>
+    <div id="price-list"></div>
+</div>
+
+<div id="payment-view" style="display:none; padding:15px;">
+    <div class="back-btn" onclick="goHome()">⬅️ BACK</div>
+    <h3 style="text-align: center; color: #ffd700; margin-bottom: 20px;">PAYMENT INFO</h3>
+    
+    <div class="pay-row" onclick="copyText('09788319436')" style="display: flex; align-items: center; gap: 12px; padding: 12px;">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+            <img src="https://i.ibb.co/xq6vBTRD/unnamed.webp" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;">
+            <img src="https://i.ibb.co/gFTW2bc2/unnamed.png" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;">
         </div>
-        <div class="square-box" onclick="showSection('tiktok')">
-            <span style="font-size: 24px;">🎵</span>
-            <span class="box-text">TIKTOK</span>
-        </div>
-        <div class="square-box" onclick="showSection('telegram')">
-            <span style="font-size: 24px;">✈️</span>
-            <span class="box-text">TELEGRAM</span>
+        <div style="line-height: 1.2;">
+            <b style="font-size: 20px;">K Pay | Wave Pay</b><br>
+            <span style="color: #4cd137; font-size: 16px; font-weight: bold;">09788319436</span><br>
+            <small style="color: #888; font-size: 16px;">Name: Yin Kyi | Tap To Copy</small>
         </div>
     </div>
 
-    <div id="sub-menu" class="menu-grid">
-        <div class="back-btn" style="grid-column: span 3;" onclick="goHome()">Back</div>
-        <div class="square-box" onclick="showSection('mlbb')"><span class="box-text">MLBB</span></div>
-        <div class="square-box" onclick="showSection('pubg')"><span class="box-text">PUBG</span></div>
-    </div>
-
-    <div id="price-view">
-        <div id="price-back-btn" class="back-btn" onclick="goHome()"><span id="section-title" style="color:#ffd700;"></span><br><small>( BACK )</small></div>
-        <div id="price-list"></div>
-    </div>
-
-    <div id="payment-view">
-        <div class="back-btn" onclick="goHome()"><span style="color:#ffd700;">ငွေပေးချေရန်</span><br><small>( BACK )</small></div>
-        
-        <div class="pay-row" onclick="copyText('09788319436')">
-            <b>K Pay | Wave Pay (Yin Kyi)</b><br>
-            <span style="font-size: 18px;">09788319436</span><br>
-            <small style="color:#aaa;">(Tap to Copy)</small>
-        </div>
-        
-        <div class="pay-row" onclick="copyText('09788319436')">
-            <b>AYA Pay (Myat Myat Moe)</b><br>
-            <span style="font-size: 18px;">09788319436</span><br>
-            <small style="color:#aaa;">(Tap to Copy)</small>
-        </div>
-        
-        <a href="https://t.me/LaPa_PaBu" target="_blank" style="text-decoration: none;">
-            <div class="upload-label" style="background: #4cd137; color: white; margin-top: 15px;">
-                ပြေစာပို့ရန် (Admin ဆီသို့) 🧾
-            </div>
-        </a>
-
-        <div style="color: #ff4d4d; font-size: 12px; margin-top: 20px; line-height: 1.6; border: 1px solid #ff4d4d; padding: 10px; border-radius: 8px;">
-            <p style="margin: 0;">⚠️ ငွေလွဲရာတွင် Note တွင် Shopping Or Auto ပါသည့်အရာသာ ရေးပေးပါ။</p>
-            <p style="margin: 5px 0 0 0;">⚠️ တစ်ခြားအရာရေးပါက ပိုက်ဆံထည့်ပေးမည်မဟုတ်ပါ။</p>
-            <p style="margin: 5px 0 0 0;">⚠️ ငွေလွဲပြီးပါက မိနစ် 20 အတွင်း ပြေစာပို့ပေးပါ။</p>
+    <div class="pay-row" onclick="copyText('09788319436')" style="display: flex; align-items: center; gap: 12px; padding: 12px;">
+        <img src="https://i.ibb.co/S4dG5Yz1/unnamed-1.png" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;">
+        <div style="line-height: 1.2;">
+            <b style="font-size: 20px;">AYA Pay</b><br>
+            <span style="color: #4cd137; font-size: 16px; font-weight: bold;">09788319436</span><br>
+            <small style="color: #888; font-size: 16px;">Name: Myat Myat Moe | Tap To Copy</small>
         </div>
     </div>
+
+    <a href="https://t.me/LaPa_PaBu" target="_blank" style="text-decoration:none;">
+        <div style="background:#4cd137; color:white; padding:12px; text-align:center; border-radius:8px; font-weight: bold; margin-top: 15px; font-size: 14px;">
+            ပြေစာပို့ရန် (Admin) 🧾
+        </div>
+    </a>
 </div>
 
 <div id="side-menu">
-    <div style="text-align: right; font-size: 30px;" onclick="toggleMenu()">×</div>
-    <h3 style="color:#ffd700;">CONTACT</h3>
-    <div>👤 Admin: @LaPa_PaBu<br>📢 Group: @KixxZGame_Store</div>
+    <div onclick="toggleMenu()" style="cursor:pointer; font-size: 30px; text-align: right;">×</div>
+    <h3 style="color: #ffd700;">SETTING</h3>
+    <p>👤 Owner: <a href="https://t.me/LaPa_PaBu" style="color: #4cd137;">@LaPa_PaBu</a></p>
+    <p>📢 Channel: <a href="https://t.me/KixxZGame_Store" style="color: #4cd137;">@KixxZGame_Store</a></p>
 </div>
 
 <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const amount = urlParams.get('amount');
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    const tg = window.Telegram?.WebApp; 
+    if(tg) tg.expand();
 
-    window.onload = function() {
-        if (amount) {
-            const amountDisplay = document.createElement('div');
-            amountDisplay.style.textAlign = 'center';
-            amountDisplay.style.color = '#ffd700';
-            amountDisplay.style.fontSize = '18px';
-            amountDisplay.style.margin = '10px 0';
-            amountDisplay.style.padding = '10px';
-            amountDisplay.style.border = '1px solid #ffd700';
-            amountDisplay.style.borderRadius = '8px';
-            amountDisplay.innerText = "ကျသင့်ငွေ: " + amount + " Ks";
-            const container = document.querySelector('.container');
-            container.insertBefore(amountDisplay, container.firstChild);
-        }
-    };
+const data = {
+    mlbb: { 
+        name: "MLBB DIAMONDS 💎", 
+        items: [
+            {l: "💎 11 Diamonds", p: 1000}, {l: "💎 22 Diamonds", p: 1900},
+            {l: "💎 33 Diamonds", p: 2800}, {l: "💎 44 Diamonds", p: 3700},
+            {l: "💎 86 Diamonds", p: 5100}, {l: "💎 172 Diamonds", p: 10200},
+            {l: "💎 257 Diamonds", p: 14800}, {l: "💎 343 Diamonds", p: 19800},
+            {l: "💎 429 Diamonds", p: 24900}, {l: "💎 515 Diamonds", p: 29900},
+            {l: "💎 600 Diamonds", p: 34500}, {l: "💎 Weekly Pass", p: 6100},
+            {l: "Other Amount", p: 0, ask: true}
+        ] 
+    },
+    pubg: { 
+        name: "PUBG UC 🔫", 
+        items: [
+            {l: "UC 60", p: 4200}, {l: "UC 120", p: 8300},
+            {l: "UC 180", p: 12400}, {l: "UC 325", p: 20100},
+            {l: "UC 385", p: 24200}, {l: "UC 445", p: 28300},
+            {l: "UC 660", p: 40000}, {l: "Other Amount", p: 0, ask: true}
+        ] 
+    },
+    tiktok: { name: "TIKTOK COINS", items: [{l: "Coins", p: 0, ask: true}] },
+    telegram: { name: "TELEGRAM STARS", items: [{l: "Stars", p: 0, ask: true}] }
+};
 
-    const data = {
-        mlbb: { name: "MLBB DIAMONDS", items: [
-            {l: "11 Dia", p: "1,000Ks"}, {l: "22 Dia", p: "1,900Ks"}, {l: "33 Dia", p: "2,800Ks"}, 
-            {l: "44 Dia", p: "3,700Ks"}, {l: "86 Dia", p: "5,100Ks"}, {l: "172 Dia", p: "10,200Ks"}, 
-            {l: "257 Dia", p: "15,300Ks"}, {l: "Weekly Pass", p: "6,000Ks"}
-        ]},
-        pubg: { name: "PUBG UC", items: [{l: "UC", p: "Ask Admin"}] },
-        tiktok: { name: "TIKTOK COINS", items: [{l: "Coins", p: "Ask Admin"}] },
-        telegram: { name: "TELEGRAM STARS", items: [{l: "Stars", p: "Ask Admin"}] }
-    };
     function toggleMenu() { document.getElementById('side-menu').classList.toggle('active'); }
-    function showSubMenu() { document.getElementById('home-page').style.display = 'none'; document.getElementById('payment-view').style.display = 'none'; document.getElementById('price-view').style.display = 'none'; document.getElementById('sub-menu').style.display = 'grid'; }
-    function showSection(key) {
-        document.getElementById('home-page').style.display = 'none';
-        document.getElementById('sub-menu').style.display = 'none';
-        document.getElementById('payment-view').style.display = 'none';
-        document.getElementById('price-view').style.display = 'block';
-        document.getElementById('section-title').innerText = data[key].name;
-        const backBtn = document.getElementById('price-back-btn');
-        if(key === 'mlbb' || key === 'pubg') { backBtn.setAttribute('onclick', 'showSubMenu()'); } else { backBtn.setAttribute('onclick', 'goHome()'); }
-        let html = '';
-        data[key].items.forEach(i => { html += `<div class="price-row"><span>${i.l}</span><span style="color: #4cd137;">${i.p}</span></div>`; });
-        document.getElementById('price-list').innerHTML = html;
+    
+    function showSubMenu() { 
+        document.getElementById('home-page').style.display='none'; 
+        document.getElementById('price-view').style.display='none';
+        document.getElementById('payment-view').style.display='none';
+        document.getElementById('sub-menu').style.display='grid'; 
     }
-    function showPayment() { document.getElementById('home-page').style.display = 'none'; document.getElementById('sub-menu').style.display = 'none'; document.getElementById('price-view').style.display = 'none'; document.getElementById('payment-view').style.display = 'block'; }
-    function goHome() { document.getElementById('payment-view').style.display = 'none'; document.getElementById('price-view').style.display = 'none'; document.getElementById('sub-menu').style.display = 'none'; document.getElementById('home-page').style.display = 'grid'; }
-    function copyText(t) { navigator.clipboard.writeText(t); alert("နံပါတ် Copy ယူပြီးပါပြီ"); }
+    
+    function showSection(key) {
+    document.getElementById('home-page').style.display='none';
+    document.getElementById('sub-menu').style.display='none';
+    document.getElementById('price-view').style.display='block';
+    document.getElementById('section-title').innerText = data[key].name;
+
+    function buyItem(name, price) {
+    alert(`${name} ကို ${price.toLocaleString()} Ks ဖြင့် ဝယ်ယူရန် Admin ထံ ဆက်သွယ်ပါ။`);
+    window.open('https://t.me/LaPa_PaBu', '_blank');
+}
+    
+    let h = '';
+    data[key].items.forEach(i => {
+        if(i.ask) {
+            h += `<div class="price-row" onclick="window.open('https://t.me/LaPa_PaBu', '_blank')" style="cursor:pointer;">
+                    <span>${i.l}</span>
+                    <span style="color:#ff4d4d; font-weight:bold;">Ask Owner ↗️</span>
+                  </div>`;
+        } else {
+            h += `<div class="price-row" onclick="buyItem('${i.l}', ${i.p})" style="cursor:pointer;">
+                    <span>${i.l}</span>
+                    <span style="color:#4cd137; font-weight:bold;">${i.p.toLocaleString()} Ks</span>
+                  </div>`;
+        }
+    });
+    document.getElementById('price-list').innerHTML = h;
+}  
+
+    function showPayment() { 
+        document.getElementById('home-page').style.display='none'; 
+        document.getElementById('sub-menu').style.display='none'; 
+        document.getElementById('price-view').style.display='none'; 
+        document.getElementById('payment-view').style.display='block'; 
+    }
+    
+    function goHome() { 
+        document.getElementById('home-page').style.display='grid'; 
+        document.getElementById('sub-menu').style.display='none'; 
+        document.getElementById('price-view').style.display='none'; 
+        document.getElementById('payment-view').style.display='none'; 
+    }
+
+    function copyText(t) { 
+        navigator.clipboard.writeText(t); 
+        alert("ဖုန်းနံပါတ် Copy ယူပြီးပါပြီ: " + t); 
+    }
 </script>
+
 </body>
 </html>
