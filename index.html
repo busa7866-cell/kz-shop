@@ -1,207 +1,624 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>KZ Game Shop</title>
+
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@600&display=swap" rel="stylesheet">
+
     <style>
+
         body { margin: 0; padding: 0; font-family: 'Rajdhani', sans-serif; background: radial-gradient(circle at top, #330000, #000033, #000); color: white; min-height: 100vh; }
+
         header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(0, 0, 0, 0.5); border-bottom: 1px solid rgba(255, 215, 0, 0.3); }
+
         .logo-title { display: flex; align-items: center; gap: 10px; }
+
         .logo-img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
+
         .title { font-family: 'Orbitron', sans-serif; font-size: 20px; color: #ffd700; margin: 0; }
+
         .menu-btn { cursor: pointer; color: #ffd700; font-size: 11px; font-weight: bold; border: 1px solid #ff0d00a8; padding: 5px 10px; border-radius: 5px; }
+
         .balance-box { background: #333; padding: 15px; text-align: center; font-size: 18px; border-radius: 10px; margin: 10px; border: 1px solid #ffd700; }
+
         .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
-        .square-box { aspect-ratio: 1 / 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-align: center; }
+
+        .square-box { aspect-ratio: 1 / 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-align: center; transition: 0.2s; }
+
+        .square-box:active { transform: scale(0.95); }
+
         .box-img { width: 60%; height: 60%; object-fit: contain; }
-        .back-btn { background: rgba(255,255,255,0.1); padding: 15px; text-align: center; border-radius: 10px; margin-bottom: 15px; cursor: pointer; border: 1px solid rgba(255,215,0,0.3); grid-column: span 3; }
-        .price-row { display: flex; justify-content: space-between; padding: 15px; background: rgba(255, 255, 255, 0.05); margin-bottom: 8px; border-radius: 8px; border-left: 3px solid #ffd700; align-items: center; }
+
+        .back-btn { background: rgba(255,255,255,0.1); padding: 15px; text-align: center; border-radius: 10px; margin-bottom: 15px; cursor: pointer; border: 1px solid rgba(255,215,0,0.3); grid-column: span 3; font-weight: bold; transition: 0.2s; }
+
+        .back-btn:active { background: rgba(255,215,0,0.2); }
+
+        
+
+        /* Category Row CSS */
+
+        .cat-row { display: flex; justify-content: space-between; padding: 16px; background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(0,0,0,0.2)); margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #00d2ff; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-weight: bold; font-size: 16px; transition: 0.2s; animation: slideIn 0.3s ease-out; }
+
+        .cat-row:active { transform: scale(0.98); border-left-color: #ffd700; }
+
+        
+
+        /* Price Row CSS */
+
+        .price-row { display: flex; justify-content: space-between; padding: 15px; background: rgba(255, 255, 255, 0.05); margin-bottom: 8px; border-radius: 8px; border-left: 3px solid #ffd700; align-items: center; animation: slideIn 0.3s ease-out; }
+
         .pay-row { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border-left: 3px solid #ffd700; text-align: center; font-size: 18px; }
+
         #side-menu { position: fixed; top: 0; right: -100%; width: 70%; height: 100%; background: #000; z-index: 100; transition: 0.3s; padding: 30px; border-left: 2px solid #ffd700; }
+
         #side-menu.active { right: 0; }
+
+
+
+        /* Home Page Banner CSS */
+
+        .home-banner { grid-column: span 3; background: rgba(255, 215, 0, 0.08); border: 1px solid #ffd700; border-left: 4px solid #ffd700; padding: 15px; border-radius: 8px; text-align: justify; line-height: 1.6; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+        .home-banner h3 { margin: 0 0 8px 0; color: #ffd700; font-size: 16px; text-align: center; }
+
+        .home-banner p { margin: 0; color: #fff; font-size: 13px; font-family: 'Rajdhani', sans-serif; font-weight: bold; }
+
+
+
+        /* Ads Modal CSS */
+
+        #ad-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); }
+
+        .ad-content { background: linear-gradient(135deg, #111, #330000); border: 2px solid #ffd700; border-radius: 15px; padding: 20px; text-align: center; position: relative; max-width: 320px; width: 100%; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); animation: popIn 0.4s ease-out; }
+
+        .close-ad { position: absolute; top: -12px; right: -12px; background: #ff3838; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; line-height: 28px; text-align: center; cursor: pointer; border: 2px solid #fff; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+
+        
+
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        @keyframes slideIn { 0% { opacity: 0; transform: translateX(15px); } 100% { opacity: 1; transform: translateX(0); } }
+
     </style>
+
 </head>
+
 <body>
 
+
+
 <header style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; flex-wrap: nowrap; background: rgba(0, 0, 0, 0.5); border-bottom: 1px solid rgba(255, 215, 0, 0.3);">
+
     <div class="logo-title" style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+
         <img src="https://i.ibb.co/TQVk3kC/IMG-20260301-165005-890.jpg" class="logo-img" style="width: 35px; height: 35px; flex-shrink: 0; border-radius: 8px;">
+
         <h1 class="title" style="font-family: 'Orbitron', sans-serif; color: #ffd700; font-size: 14px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">KZ GAME SHOP</h1>
+
     </div>
+
+
 
     <div style="display: flex; gap: 5px; align-items: center; flex-shrink: 0;">
+
         <div class="menu-btn" onclick="showPayment()" style="cursor: pointer; color: #ffd700; font-size: 10px; font-weight: bold; border: 1px solid rgba(255, 215, 0, 0.4); padding: 6px 8px; border-radius: 5px; white-space: nowrap;">ပြေစာတင်ရန်</div>
+
         <div class="menu-btn" onclick="toggleMenu()" style="cursor: pointer; color: #ffd700; font-size: 22px; padding: 2px 8px; border: 1px solid rgba(255, 215, 0, 0.4); border-radius: 5px; line-height: 1;">&#9776;</div>
+
     </div>
+
 </header>
 
+
+
 <div id="home-page" class="menu-grid">
+
+    <div class="home-banner">
+
+        <h3>📢 အသိပေးချက် 📢</h3>
+
+        <p>Game Items များ ဝယ်ယူအားပေးချင်ပါက Bot သို့ ကိုယ်လိုချင်သော Game Items Price ကိုလွဲပြီး In Game ID | Sever ID အစရှိသည့် ID များနဲ့ တွဲပို့ပေးခြင်းဖြင့် ဝယ်ယူအားပေးနိုင်ပါတယ်ဗျာ့</p>
+
+    </div>
+
+
+
     <div class="square-box" onclick="showSubMenu()"><img src="https://i.ibb.co/4w03yjGQ/unnamed-2.png" class="box-img"><span>GAMES</span></div>
+
     <div class="square-box" onclick="showSection('tiktok')"><img src="https://i.ibb.co/VWrVBbv4/5c40ede2420a9ece3391af43942a5409.png" class="box-img"><span>TIKTOK</span></div>
+
     <div class="square-box" onclick="showSection('telegram')"><img src="https://i.ibb.co/Y4LkTBn6/telegram-6896827-1280.png" class="box-img"><span>TELEGRAM</span></div>
+
 </div>
+
+
 
 <div id="sub-menu" class="menu-grid" style="display:none;">
+
     <div class="back-btn" onclick="goHome()">⬅️ BACK TO HOMEPAGE</div>
+
     <div class="square-box" onclick="showSection('mlbb')"><img src="https://i.ibb.co/mCFRymwj/da8ee735a4e1a99c906cec8063ef81f7.jpg" class="box-img"><span>MLBB</span></div>
+
     <div class="square-box" onclick="showSection('pubg')"><img src="https://i.ibb.co/7NX3pT1V/Player-Unknown-s-Battlegrounds-Mobile.webp" class="box-img"><span>PUBG</span></div>
+
 </div>
+
+
 
 <div id="price-view" style="display:none; padding:15px;">
-    <div class="back-btn" onclick="goHome()">⬅️ BACK</div>
-    <h3 id="section-title" style="text-align: center; color: #ffd700;"></h3>
+
+    <div class="back-btn" onclick="goBack()">⬅️ BACK</div>
+
+    <h3 id="section-title" style="text-align: center; color: #ffd700; margin-bottom: 20px;"></h3>
+
     <div id="price-list"></div>
+
 </div>
+
+
 
 <div id="payment-view" style="display:none; padding:15px;">
+
     <div class="back-btn" onclick="goHome()">⬅️ BACK</div>
+
     <h3 style="text-align: center; color: #ffd700; margin-bottom: 25px; font-family: 'Orbitron', sans-serif; letter-spacing: 2px; text-shadow: 0 0 10px #ffd700;">PAYMENT INFO</h3>
+
     
+
     <div class="pay-row" onclick="copyText('09788319436')" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(76, 209, 55, 0.3); border-left: 5px solid #4cd137; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+
         <div style="display:flex; flex-direction:column; gap:6px;">
+
             <img src="https://i.ibb.co/xq6vBTRD/unnamed.webp" style="width: 38px; height: 38px; border-radius: 6px; box-shadow: 0 0 8px rgba(255,255,255,0.2);">
+
             <img src="https://i.ibb.co/gFTW2bc2/unnamed.png" style="width: 38px; height: 38px; border-radius: 6px; box-shadow: 0 0 8px rgba(255,255,255,0.2);">
+
         </div>
 
         <div style="line-height: 1.4;">
+
             <b style="font-size: 16px; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.2);">K Pay | Wave Pay</b><br>
+
             <span style="color: #4cd137; font-size: 19px; font-weight: bold; letter-spacing: 1px;">09788319436</span><br>
+
             <small style="color: #bbb; font-size: 13px; font-weight: 500;">Name: Yin Kyi • <span style="color: #ffd700;">Tap To Copy</span></small>
+
         </div>
+
     </div>
+
+
 
     <div class="pay-row" onclick="copyText('09788319436')" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 56, 56, 0.3); border-left: 5px solid #ff3838; box-shadow: 0 4px 15px rgba(0,0,0,0.3); margin-top: 12px;">
+
         <img src="https://i.ibb.co/S4dG5Yz1/unnamed-1.png" style="width: 38px; height: 38px; border-radius: 6px; box-shadow: 0 0 8px rgba(255,255,255,0.2);">
+
         <div style="line-height: 1.4;">
+
             <b style="font-size: 16px; color: #fff;">AYA Pay</b><br>
+
             <span style="color: #4cd137; font-size: 19px; font-weight: bold; letter-spacing: 1px;">09788319436</span><br>
+
             <small style="color: #bbb; font-size: 13px; font-weight: 500;">Name: Myat Myat Moe • <span style="color: #ffd700;">Tap To Copy</span></small>
+
         </div>
+
     </div>
+
+
 
     <div style="background: rgba(255, 215, 0, 0.1); border: 1px solid #ffd700; color: #ffd700; padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 14px; line-height: 1.5; text-align: center; font-weight: bold;">
+
     ⚠️ Bot သို့ ပြေစာပေးပို့ပါက မိမိ In Game ID | Server ID | အစရှိသည်ဖြင့် မိမိဝယ်ယူသော Game Items တို့၏ ID များဖြင့် ပို့ပေးပါရန်
+
     </div>
+
+
 
     <a href="https://t.me/kz_gameshop_bot" target="_blank" style="text-decoration:none;">
+
         <div style="background: linear-gradient(45deg, #4cd137, #2ecc71); color:white; padding:16px; text-align:center; border-radius:12px; font-weight: bold; margin-top: 15px; font-size: 16px; box-shadow: 0 4px 15px rgba(76, 209, 55, 0.4);">
+
             ပြေစာပို့ရန် (Bot ဆီသို့) 🧾
+
         </div>
+
     </a>
 
+
+
     <div style="margin-top: 20px; padding: 15px; background: rgba(255, 0, 0, 0.1); border: 1px dashed #ff0000; border-radius: 10px;">
+
         <h4 style="color: #ff0000; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+
             🛑 <span style="text-decoration: underline;">Note</span>
+
         </h4>
+
         <ul style="color: #ff4d4d; margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; font-weight: bold;">
+
             <li>ငွေလွှဲရာတွင် Note ရေးသည့်အခါ Shopping (သို့) Auto ပါသည့်စာသားများသာရေးပေးရန်</li>
+
             <li>တစ်ခြားမသက်ဆိုင်သောစာသားများရေးပါက ထည့်ပေးမည်မဟုတ်ပါ</li>
+
             <li>ပြေစာအတုများ | ဖုန်းဘေလ်များ လွှဲထားပါက မဖြည့်ပေးပါ</li>
+
         </ul>
+
     </div>
+
 </div>
+
+
 
 <div id="side-menu">
+
     <div onclick="toggleMenu()" style="cursor:pointer; font-size: 30px; text-align: right;">×</div>
+
     <h3 style="color: #ffd700;">INFORMATION</h3>
+
     <p>🤖 Official Bot: <a href="https://t.me/kz_gameshop_bot" style="color: #4cd137;">@kz_gameshop_bot</a></p>
+
     <p>👤 Owner: <a href="https://t.me/LaPa_PaBu" style="color: #4cd137;">@LaPa_PaBu</a></p>
+
     <p>📢 Channel: <a href="https://t.me/KixxZGame_Store" style="color: #4cd137;">@KixxZGame_Store</a></p>
+
 </div>
 
+
+
+<div id="ad-modal">
+
+    <div class="ad-content">
+
+        <div class="close-ad" onclick="closeAd()">×</div>
+
+        <h3 style="color: #ffd700; margin-top: 0;">🔥 WELCOME 🔥</h3>
+
+        <img src="https://i.ibb.co/TQVk3kC/IMG-20260301-165005-890.jpg" style="width: 100%; border-radius: 10px; margin-bottom: 10px;">
+
+        <p style="color: white; font-size: 13px; font-weight: bold; margin-bottom: 0;">KZ Game Shop မှ ကြိုဆိုပါတယ်ဗျာ!</p>
+
+    </div>
+
+</div>
+
+
+
 <script>
+
     const tg = window.Telegram?.WebApp; 
+
     if(tg) tg.expand();
 
-    const data = {
+const data = {
         mlbb: { 
-            name: "MLBB DIAMONDS 💎", 
+            type: "item", name: "MLBB DIAMONDS", 
             items: [
-                {l: " Weekly Pass", p: 6100},
-                {l: "💎 11 Diamonds", p: 1000}, {l: "💎 22 Diamonds", p: 1900},
-                {l: "💎 33 Diamonds", p: 2800}, {l: "💎 44 Diamonds", p: 3700},
-                {l: "💎 86 Diamonds", p: 5100}, {l: "💎 172 Diamonds", p: 10200},
-                {l: "💎 257 Diamonds", p: 14800}, {l: "💎 343 Diamonds", p: 19800},
-                {l: "💎 429 Diamonds", p: 24900}, {l: "💎 515 Diamonds", p: 29900},
-                {l: "💎 600 Diamonds", p: 34500}, 
+                {l: "Weekly Pass", p: 6100}, {l: "11 Diamonds", p: 1000}, {l: "22 Diamonds", p: 1900},
+                {l: "33 Diamonds", p: 2800}, {l: "44 Diamonds", p: 3700}, {l: "86 Diamonds", p: 5100},
+                {l: "172 Diamonds", p: 10200}, {l: "257 Diamonds", p: 14800}, {l: "343 Diamonds", p: 19800},
+                {l: "429 Diamonds", p: 24900}, {l: "515 Diamonds", p: 29900}, {l: "600 Diamonds", p: 34500},
                 {l: "Other Amount", p: 0, ask: true}
             ] 
         },
         pubg: { 
-            name: "PUBG UC", 
+            type: "item", name: "PUBG UC", 
             items: [
-                {l: "UC 60", p: 4200}, {l: "UC 120", p: 8300},
-                {l: "UC 180", p: 12400}, {l: "UC 325", p: 20100},
-                {l: "UC 385", p: 24200}, {l: "UC 445", p: 28300},
-                {l: "UC 660", p: 40000}, {l: "Other Amount", p: 0, ask: true}
+                {l: "60 UC", p: 4200}, {l: "120 UC", p: 8300}, {l: "180 UC", p: 12400},
+                {l: "325 UC", p: 20100}, {l: "385 UC", p: 24200}, {l: "445 UC", p: 28300},
+                {l: "660 UC", p: 40000}, {l: "Other Amount", p: 0, ask: true}
             ] 
         },
-        tiktok: { name: "TIKTOK LIKE, FOLLOWER, VIEW", items: [{l: "SOON", p: 0, ask: true}] },
-        telegram: { name: "TELEGRAM STARS, PREMIUM, BOOST", items: [{l: "SOON", p: 0, ask: true}] }
+        tiktok: { 
+            type: "category", name: "TIKTOK SERVICES", 
+            message: "Premium Quality Boost မို့ စျေးကအနည်းငယ်ကြီးပါမယ်ဗျာ့",
+            list: [{ id: "tk_like", name: "👍 Like Boost" }, { id: "tk_foll", name: "👥 Follower Boost" }, { id: "tk_view", name: "👁️ View Boost" }] 
+        },
+        tk_like: { 
+            type: "item", name: "LIKE BOOST", note: "Note: Tiktok Video Link ပို့ပေးရန်!", 
+            items: [
+                {l: "Like 50", p: 100}, {l: "Like 100", p: 150}, {l: "Like 200", p: 200}, {l: "Like 300", p: 250}, {l: "Like 400", p: 300},
+                {l: "Like 500", p: 350}, {l: "Like 600", p: 400}, {l: "Like 700", p: 450}, {l: "Like 800", p: 500}, {l: "Like 900", p: 550},
+                {l: "Like 1K", p: 600}, {l: "Other Amount", p: 0, ask: true}
+            ] 
+        },
+        tk_foll: { 
+            type: "item", name: "FOLLOWER BOOST", note: "Note: Account Link ပို့ပေးရန်! ( Private Account ဖြစ်နေပါက တိုးမည်မဟုတ် )", 
+            items: [
+                {l: "Follower 50", p: 800}, {l: "Follower 100", p: 1400}, {l: "Follower 200", p: 2200}, {l: "Follower 300", p: 3200},
+                {l: "Follower 400", p: 4200}, {l: "Follower 500", p: 5300}, {l: "Follower 600", p: 6400}, {l: "Follower 700", p: 7200},
+                {l: "Follower 800", p: 8500}, {l: "Follower 900", p: 9200}, {l: "Follower 1K", p: 12000}, {l: "Other Amount", p: 0, ask: true}
+            ] 
+        },
+        tk_view: { 
+            type: "item", name: "VIEW BOOST", note: "Note: တိုးမည့် Video Link ပို့ပေးရန်!", 
+            items: [
+                {l: "View 1K", p: 2300}, {l: "View 2K", p: 4600}, {l: "View 3K", p: 6900}, {l: "View 4K", p: 9000}, {l: "View 5K", p: 11200},
+                {l: "View 6K", p: 13600}, {l: "View 7K", p: 15800}, {l: "View 8K", p: 17900}, {l: "View 9K", p: 19900}, {l: "View 10K", p: 22500},
+                {l: "Other Amount", p: 0, ask: true}
+            ] 
+        },
+        telegram: { 
+            type: "category", name: "TELEGRAM SERVICES", 
+            list: [{ id: "tg_sub", name: "📢 Subscriber Boost" }, { id: "tg_star", name: "⭐ Telegram Star" }, { id: "tg_prem", name: "💎 Telegram Premium" }] 
+        },
+        tg_sub: { 
+            type: "category", name: "SUBSCRIBER BOOST", 
+            list: [{ id: "tg_sub_mm", name: "🇲🇲 Myanmar Name Subscriber" }, { id: "tg_sub_en", name: "🇺🇸 English Name Subscriber" }] 
+        },
+        tg_sub_mm: { 
+            type: "item", name: "MYANMAR SUBSCRIBER", 
+            note: "Note: ဝယ်ယူရာတွင် ကိုယ့် Channel Link နဲ့တကွပေးပို့ရန် Myanmar Name နဲ့ Subscriber များဖြစ်မည်။ ( ရက် 60 တိတိအာမခံ )", 
+            items: [
+                {l: "MM Sub 50", p: 400}, {l: "MM Sub 100", p: 800}, {l: "MM Sub 200", p: 1200}, {l: "MM Sub 300", p: 1700}, {l: "MM Sub 400", p: 2200},
+                {l: "MM Sub 500", p: 2800}, {l: "MM Sub 600", p: 3300}, {l: "MM Sub 700", p: 3800}, {l: "MM Sub 800", p: 4300}, {l: "MM Sub 900", p: 4900},
+                {l: "MM Sub 1K", p: 5400}, {l: "Other Amount", p: 0, ask: true}
+            ] 
+        },
+        tg_sub_en: { 
+            type: "item", name: "ENGLISH SUBSCRIBER", 
+            note: "Note: ဝယ်ယူရာတွင် ကိုယ့် Channel Link နဲ့တကွပေးပို့ရန် ( ရက် 60 တိတိအာမခံ )", 
+            items: [
+                {l: "Eng Sub 50", p: 300}, {l: "Eng Sub 100", p: 500}, {l: "Eng Sub 200", p: 700}, {l: "Eng Sub 300", p: 900}, {l: "Eng Sub 400", p: 1200},
+                {l: "Eng Sub 500", p: 1400}, {l: "Eng Sub 600", p: 1600}, {l: "Eng Sub 700", p: 1800}, {l: "Eng Sub 800", p: 1900}, {l: "Eng Sub 900", p: 2000},
+                {l: "Eng Sub 1K", p: 2200}, {l: "Other Amount", p: 0, ask: true}
+            ] 
+        },
+        tg_star: { 
+            type: "item", name: "TELEGRAM STAR ⭐", 
+            note: "Note: ဝယ်ယူရာတွင် ကိုယ့် Telegram User Name နဲ့တကွ ပို့ပေးပါ ( စျေးအပြောင်းလဲများရှိနိုင် )", 
+            items: [
+                {l: "Star 50", p: 3400}, {l: "Star 75", p: 5000}, {l: "Star 100", p: 6600}, {l: "Star 150", p: 9800}, {l: "Star 175", p: 11500},
+                {l: "Star 200", p: 13200}, {l: "Star 250", p: 16400}, {l: "Star 300", p: 19600}, {l: "Star 500", p: 32700}, {l: "Star 1000", p: 65300},
+                {l: "Other Amount", p: 0, ask: true}
+            ] 
+        },
+        tg_prem: { 
+            type: "item", name: "TELEGRAM PREMIUM 💎", 
+            note: "Note: ဝယ်ယူရာတွင် ကိုယ့် Telegram User Name နဲ့တကွ ပို့ပေးပါ ( စျေးအပြောင်းလဲများရှိနိုင် )", 
+            items: [
+                {l: "Premium 1 Month (Login)", p: 23000}, {l: "Premium 3 Months", p: 50000},
+                {l: "Premium 6 Months", p: 72000}, {l: "Premium 12 Months (1 Year)", p: 117000},
+            
+            ] 
+        }
     };
 
+
+    let navHistory = [];
+
+    let currentKey = '';
+
+
+
     function hideAll() {
+
         document.getElementById('side-menu').classList.remove('active');
+
         document.getElementById('home-page').style.display = 'none';
+
         document.getElementById('sub-menu').style.display = 'none';
+
         document.getElementById('price-view').style.display = 'none';
+
         document.getElementById('payment-view').style.display = 'none';
+
     }
 
-    function toggleMenu() { 
-        document.getElementById('side-menu').classList.toggle('active'); 
-    }
 
-    function showPayment() { 
-        hideAll();
-        document.getElementById('payment-view').style.display = 'block'; 
-    }
+
+    function toggleMenu() { document.getElementById('side-menu').classList.toggle('active'); }
+
+
+
+    function showPayment() { hideAll(); document.getElementById('payment-view').style.display = 'block'; }
+
+
 
     function goHome() { 
-        hideAll();
+
+        hideAll(); 
+
         document.getElementById('home-page').style.display = 'grid'; 
+
+        navHistory = []; 
+
+        currentKey = ''; 
+
     }
+
+
 
     function showSubMenu() { 
-        hideAll();
+
+        hideAll(); 
+
         document.getElementById('sub-menu').style.display = 'grid'; 
+
+        navHistory = []; 
+
+        currentKey = 'submenu'; 
+
     }
+
+
 
     function buyItem(name, price) {
-        alert(`${name} ကို ${price.toLocaleString()} Ks ဖြင့် ဝယ်ယူရန် Admin ထံ ဆက်သွယ်ပါ။`);
-        window.open('https://t.me/LaPa_PaBu', '_blank');
+
+        alert(`${name} ကို ${price.toLocaleString()} Ks ဖြင့် Bot ထံ ဝယ်ယူပါ။`);
+
+        window.open('https://t.me/kz_gameshop_bot', '_blank');
+
     }
 
-    function showSection(key) {
+
+
+    function showSection(key, isBack = false) {
+
+        if (!isBack) {
+
+            if (currentKey) navHistory.push(currentKey);
+
+            else if (document.getElementById('sub-menu').style.display === 'grid') navHistory.push('submenu');
+
+            else navHistory.push('home');
+
+        }
+
+        currentKey = key;
+
+
+
         hideAll();
+
         document.getElementById('price-view').style.display = 'block';
+
         document.getElementById('section-title').innerText = data[key].name;
 
+
+
         let h = '';
-        data[key].items.forEach(i => {
-            if(i.ask) {
-                h += `<div class="price-row" onclick="window.open('https://t.me/kz_gameshop_bot', '_blank')" style="cursor:pointer;">
-                        <span>${i.l}</span>
-                        <span style="color:#ff4d4d; font-weight:bold;">Ask Bot (TAP)↗️</span>
+
+
+
+        // ၁။ TikTok Main Category မှာ Message ပြရန်
+
+        if (data[key].message) {
+
+            h += `<div style="color:#ffd700; background:rgba(255,215,0,0.1); padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-weight:bold; border:1px dashed #ffd700;">${data[key].message}</div>`;
+
+        }
+
+
+
+        // ၂။ Like/Follower/View ထဲဝင်ရင် Note ကို အနီရောင်နဲ့ အကြီးကြီးပြရန်
+
+        if (data[key].note) {
+
+            h += `<div style="color:#ff3838; font-size:18px; font-weight:bold; text-align:center; margin-bottom:15px; padding:10px; background:rgba(255,0,0,0.1); border-radius:8px; line-height:1.4;">${data[key].note}</div>`;
+
+        }
+
+
+
+        if (data[key].type === "category") {
+
+            data[key].list.forEach(c => {
+
+                h += `<div class="cat-row" onclick="showSection('${c.id}')">
+
+                        <span>${c.name}</span>
+
+                        <span style="color:#00d2ff; font-size:18px;">➡️</span>
+
                       </div>`;
-            } else {
-                h += `<div class="price-row" onclick="buyItem('${i.l}', ${i.p})" style="cursor:pointer;">
-                        <span>${i.l}</span>
-                        <span style="color:#4cd137; font-weight:bold;">${i.p.toLocaleString()} Ks</span>
-                      </div>`;
-            }
-        });
+
+            });
+
+        } else {
+
+            data[key].items.forEach(i => {
+
+                if(i.ask) {
+
+                    h += `<div class="price-row" onclick="window.open('https://t.me/kz_gameshop_bot', '_blank')" style="cursor:pointer;">
+
+                            <span>${i.l}</span>
+
+                            <span style="color:#ff4d4d; font-weight:bold;">Ask Bot (TAP)↗️</span>
+
+                          </div>`;
+
+                } else {
+
+                    h += `<div class="price-row" onclick="buyItem('${i.l}', ${i.p})" style="cursor:pointer;">
+
+                            <span>${i.l}</span>
+
+                            <span style="color:#4cd137; font-weight:bold;">${i.p.toLocaleString()} Ks</span>
+
+                          </div>`;
+
+                }
+
+            });
+
+        }
+
         document.getElementById('price-list').innerHTML = h;
+
     }
+
+    
+
+    // မှတ်ဉာဏ်ကို ပြန်ဆုတ်ပေးမယ့် Back Button Function
+
+    function goBack() {
+
+        let prev = navHistory.pop();
+
+        if (prev === 'home') {
+
+            currentKey = '';
+
+            goHome();
+
+        } else if (prev === 'submenu') {
+
+            currentKey = '';
+
+            showSubMenu();
+
+        } else if (prev) {
+
+            showSection(prev, true);
+
+        } else {
+
+            currentKey = '';
+
+            goHome();
+
+        }
+
+    }
+
+
 
     function copyText(t) { 
+
         navigator.clipboard.writeText(t); 
+
         alert("ဖုန်းနံပါတ် Copy ယူပြီးပါပြီ: " + t); 
+
     }
+
+
+
+    function closeAd() { document.getElementById('ad-modal').style.display = 'none'; }
+
+
+
+    window.onload = function() {
+
+        setTimeout(() => { document.getElementById('ad-modal').style.display = 'flex'; }, 1000);
+
+    };
+
 </script>
 
+
+
 </body>
+
 </html>
